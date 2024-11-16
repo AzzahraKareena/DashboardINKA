@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Data</h1>
+        <div class="button-container">
+            <a href="{{ url_for('upload_cn42n') }}"><button>CN42N</button></a>
+            <a href="{{ url_for('upload_cn43n') }}"><button>CN43N</button></a>
+            <a href="{{ url_for('upload_cn55n') }}"><button>CN55N</button></a>
+            <a href="{{ url_for('upload_va05') }}"><button>VA05</button></a>
+            <a href="{{ url_for('upload_me5j') }}"><button>ME5J</button></a>
+            <a href="{{ url_for('upload_me2j') }}"><button>ME2J</button></a>
+            <a href="{{ url_for('upload_mb51_gr') }}"><button>MB51_GR</button></a>
+            <a href="{{ url_for('upload_mb51_gi') }}"><button>MB51_GI</button></a>
+            <a href="{{ url_for('upload_mb52') }}"><button>MB52</button></a>
+            <a href="{{ url_for('upload_matspec') }}"><button>MATSPEC</button></a>
+        </div>
+    </div>
+</body>
+</html>
