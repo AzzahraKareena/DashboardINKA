@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        table th {
+            background-color: #D71313;
+            color: #fff;
+        }
+        .form-container {
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-container input, .form-container select {
+            padding: 8px;
+            margin: 5px 0;
+            width: calc(100% - 16px);
+            border: 1px solid #ddd;
+        }
+        .form-container button {
+            padding: 10px;
+            background: #D71313;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        .form-container button:hover {
+            background: #D71313;
+        }
+        .flash {
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash.danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .btn-edit {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1><center>Manage Users</h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- User Form -->
+    <div class="form-container">
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="nip" placeholder="NIP" required>
+            <input type="text" name="divisi" placeholder="Divisi" required>
+            <select name="role" required>
+                <option value="user">User   </option>
+                <option value="admin">Admin</option>
+            </select>
+            <button type="submit">Add User</button>
+        </form>
+    </div>
+<!-- User Table -->
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>NIP</th>
+            <th>Divisi</th>
+            <th>Role</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.nip }}</td>
+            <td>{{ user.divisi }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+                <button class="btn-edit" onclick="window.location.href='{{ url_for('auth.edit_user', user_id=user.id) }}'">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-delete" onclick="window.location.href='{{ url_for('auth.delete_user', user_id=user.id) }}'">
+                    <i class="fas fa-trash-alt"></i> Hapus
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Register</h1>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="text" name="nip" placeholder="NIP" required>
+        <input type="text" name="divisi" placeholder="Divisi" required>
+    
+        <!-- Dropdown untuk role -->
+        {% if not admin_exists %}
+            <label for="role">Role:</label>
+            <select name="role" id="role">
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+            </select>
+        {% endif %}
+    
+        <button type="submit">Register</button>
+    </form>
+    
+    <div class="register-link">
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+    </div>
+</div>
+{% endblock %}

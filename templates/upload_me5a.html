@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload ME5A File</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+        }
+        .header {
+            background-color: #800000; /* Maroon color */
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            margin: 20px;
+            gap: 20px;
+        }
+        .upload-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .upload-section h2 {
+            color: #800000;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .upload-section input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .upload-section button {
+            padding: 12px 20px;
+            background-color: #800000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 16px;
+            width: 100%;
+        }
+        .upload-section button:hover {
+            background-color: #a52a2a;
+        }
+        .table-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* Enable horizontal scrolling */
+        }
+        .table-section h2 {
+            color: #800000;
+            margin-bottom: 20px;
+        }
+        .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .table-section th, .table-section td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .table-section th {
+            background-color: #800000;
+            color: white;
+        }
+        .table-section tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        /* Sticky header for the table */
+        .table-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        ME5A Management
+    </div>
+
+    <div class="container">
+        <!-- Form Upload Section -->
+        <div class="upload-section">
+            <h2>Upload File</h2>
+            <form id="uploadForm" action="/me5j/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="button" id="uploadButton">Upload</button>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <h2>Data ME5A</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead class="table-header">
+                        <tr>
+                            <th>Acct Assignment Cat</th>
+                            <th>Requisitioner</th>
+                            <th>Purchase Requisition</th>
+                            <th>Req Tracking Number</th>
+                            <th>Item of Requisition</th>
+                            <th>Release Indicator</th>
+                            <th>Requisition Date</th>
+                            <th>Release Date</th>
+                            <th>Changed On</th>
+                            <th>Delivery Date</th>
+                            <th>Deletion Indicator</th>
+                            <th>Processing Status</th>
+                            <th>Material</th>
+                            <th>Short Text</th>
+                            <th>Unit of Measure</th>
+                            <th>Material Group</th>
+                            <th>Purchasing Group</th>
+                            <th>Closed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        <!-- Data from API will be appended here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and display data from the ME5J API
+        async function fetchAndDisplayData() {
+            try {
+                const response = await fetch('/api/me5a'); // Adjust the API URL if necessary
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data from the API');
+                }
+
+                const data = await response.json();
+                const tableBody = document.getElementById('data-table');
+                const limitedData = data.slice(0, 10); // Limit to 10 rows for display
+
+                // Clear the existing table content
+                tableBody.innerHTML = "";
+
+                // Loop through the data and append rows to the table
+                limitedData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row['acct_assignment_cat']}</td>
+                        <td>${row['requisitioner']}</td>
+                        <td>${row['purchase_requisition']}</td>
+                        <td>${row['req_tracking_number']}</td>
+                        <td>${row['item_of_requisition']}</td>
+                        <td>${row['release_indicator']}</td>
+                        <td>${row['requisition_date']}</td>
+                        <td>${row['release_date']}</td>
+                        <td>${row['changed_on']}</td>
+                        <td>${row['deliv_date']}</td>
+                        <td>${row['deletion_indicator']}</td>
+                        <td>${row['processing_status']}</td>
+                        <td>${row['material']}</td>
+                        <td>${row['short_text']}</td>
+                        <td>${row['unit_of_measure']}</td>
+                        <td>${row['material_group']}</td>
+                        <td>${row['purchasing_group']}</td>
+                        <td>${row['closed']}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while fetching the data.');
+            }
+        }
+
+        // Call the function to fetch and display data when the page is loaded
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayData);
+
+        // SweetAlert for upload
+        // SweetAlert for upload
+        document.getElementById("uploadButton").addEventListener("click", function () {
+            Swal.fire({
+                title: "Konfirmasi Upload",
+                text: "Kolom yang harus diunggah meliputi: Project Definition dan NameKolom yang harus diunggah meliputi: Acct Assignment Category, Requisitioner, Purchase Requisition, Requisition Tracking Number, Item of Requisition, Release Indicator, Requisition Date, Release Date, Changed On, Delivery Date, Deletion Indicator, Processing Status, Material, Short Text, Unit of Measure, Material Group, Purchasing Group, dan Closed.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Lanjutkan Upload",
+                cancelButtonText: "Batal",
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById("uploadForm").submit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

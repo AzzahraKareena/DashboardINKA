@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Pembelian Ulang</title>
+</head>
+<body>
+    <h1>Prediksi Pembelian Ulang Material</h1>
+
+            <!-- upload.html -->
+        <form action="{{ url_for('prediction.prediction_view') }}" method="POST">
+            <input type="text" name="material" placeholder="Material">
+            <button type="submit">Predict</button>
+        </form>
+
+
+    <div id="result">
+        <!-- Hasil prediksi akan muncul di sini -->
+    </div>
+</body>
+</html>

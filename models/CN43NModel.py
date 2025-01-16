@@ -22,19 +22,19 @@ def convert_html_to_csv(file_path):
 
 def insert_into_database(csv_path):
     conn = mysql.connector.connect(
-        host="36.94.112.123",  # IP server database
-        user="it",             # Username database
-        password="ITIMS321",   # Password database
-        database="dashboard",  # Nama database
-        port=3306              # Port MySQL (default: 3306)
+        host="36.94.112.125",  # IP server database
+        user="it_dev",             # Username database
+        password="MyPassword1!",   # Password database
+        database="dashboard", 
+        port = 3306 
     )
     cursor = conn.cursor()
-    cursor.execute("TRUNCATE TABLE CN43N")  # Hapus data lama
+    cursor.execute("TRUNCATE TABLE cn43n")  # Hapus data lama
 
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            sql = "INSERT INTO CN43N (`Project_definition`, `WBS_element`, `Name`, `Level`, `Status`) VALUES (%s, %s, %s, %s, %s)"
+            sql = "INSERT INTO cn43n (`Project_definition`, `WBS_element`, `Name`, `Level`, `Status`) VALUES (%s, %s, %s, %s, %s)"
             cursor.execute(sql, (row['Project definition'], row['WBS element'],row['Name'],row['Level'],row['Status']))
 
     conn.commit()

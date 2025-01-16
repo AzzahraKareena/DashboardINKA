@@ -2,41 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload CN43N File</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f7f5f5;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+        }
+        .header {
+            background-color: #800000; /* Maroon color */
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
         }
         .container {
+            display: flex;
+            flex-direction: column;
+            margin: 20px;
+            gap: 20px;
+        }
+        .upload-section {
             background-color: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
         }
-        h1 {
-            color: #333;
+        .upload-section h2 {
+            color: #800000;
             margin-bottom: 20px;
+            text-align: center;
         }
-        input[type="file"] {
+        .upload-section input[type="file"] {
             margin: 20px 0;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
-            box-sizing: border-box;
         }
-        button {
+        .upload-section button {
             padding: 12px 20px;
-            background-color: #4CAF50;
+            background-color: #800000;
             color: white;
             border: none;
             border-radius: 5px;
@@ -44,34 +58,135 @@
             transition: background-color 0.3s, transform 0.2s;
             font-size: 16px;
             width: 100%;
-            margin-bottom: 10px; /* Add margin for spacing */
         }
-        button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
+        .upload-section button:hover {
+            background-color: #a52a2a;
         }
-        button:active {
-            transform: scale(0.95);
+        .table-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* Enable horizontal scrolling */
         }
-        .back-button {
-            background-color: #007BFF;
-            width: 100px;
-            height: 40px; /* Blue color for the back button */
+        .table-section h2 {
+            color: #800000;
+            margin-bottom: 20px;
         }
-        .back-button:hover {
-            background-color: #0056b3;
-             /* Darker blue on hover */
+        .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .table-section th, .table-section td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .table-section th {
+            background-color: #800000;
+            color: white;
+        }
+        .table-section tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        /* Sticky header for the table */
+        .table-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Upload CN43N File</h1>
-        <form action="/cn43n/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <button type="submit">Upload</button>
-        </form>
-        <a href="/"><button class="back-button">Kembali</button></a>
+    <div class="header">
+        CN43N Management
     </div>
+
+    <div class="container">
+        <!-- Form Upload Section -->
+        <div class="upload-section">
+            <h2>Upload File</h2>
+            <form id="uploadForm" action="/cn43n/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="button" id="uploadButton">Upload</button>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <h2>Data CN43N</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead class="table-header">
+                        <tr>
+                            <th>Project Definition</th>
+                            <th>WBS Element</th>
+                            <th>Name</th>
+                            <th>Level</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        <!-- Data from API will be appended here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and display data from the CN43N API
+        async function fetchAndDisplayData() {
+            try {
+                const response = await fetch('/api/cn43n');
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data dari API');
+                }
+
+                const data = await response.json();
+                const tableBody = document.getElementById('data-table');
+                const limitedData = data.slice(0, 10);
+
+                tableBody.innerHTML = ""; // Clear table before appending
+                limitedData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row['Project_definition']}</td>
+                        <td>${row['WBS_element']}</td>
+                        <td>${row['Name']}</td>
+                        <td>${row['Level']}</td>
+                        <td>${row['Status']}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                Swal.fire({
+                    title: "Error!",
+                    text: "Gagal memuat data dari API.",
+                    icon: "error",
+                });
+            }
+        }
+
+        // SweetAlert untuk upload
+        document.getElementById("uploadButton").addEventListener("click", function () {
+            Swal.fire({
+                title: "Konfirmasi Upload",
+                text: "Kolom yang harus diunggah meliputi: Project Definition, WBS Element, Name, Level, dan Status.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Lanjutkan Upload",
+                cancelButtonText: "Batal",
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById("uploadForm").submit();
+                }
+            });
+        });
+
+        // Load data saat halaman dimuat
+        document.addEventListener("DOMContentLoaded", fetchAndDisplayData);
+    </script>
 </body>
 </html>

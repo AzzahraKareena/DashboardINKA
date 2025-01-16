@@ -1,70 +1,760 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Upload Data</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Admin Dashboard | Korsat X Parmaga</title>
+    <!-- ======= Styles ====== -->
     <style>
+        /* =========== Google Fonts ============ */
+        @import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap");
+        
+        /* =============== Globals ============== */
+        * {
+          font-family: "Ubuntu", sans-serif;
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        :root {
+          --blue: #2a2185;
+          --white: #fff;
+          --gray: #f5f5f5;
+          --black1: #222;
+          --black2: #999;
+          --maroon: #800000;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+          min-height: 100vh;
+          overflow-x: hidden;
         }
+        
         .container {
-            text-align: center;
-            margin-top: 50px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          position: relative;
+          width: 100%;
         }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
+        
+        /* =============== Navigation ================ */
+        .navigation {
+          position: fixed;
+          width: 300px;
+          height: 100%;
+          background: var(--maroon);
+          border-left: 10px solid var(--maroon);
+          transition: 0.5s;
+          overflow: hidden;
         }
-        .button-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
+        .navigation.active {
+          width: 80px;
         }
-        button {
-            padding: 12px 25px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            font-size: 16px;
+        
+        .navigation ul {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
         }
-        button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
+        
+        .navigation ul li {
+          position: relative;
+          width: 100%;
+          list-style: none;
+          border-top-left-radius: 30px;
+          border-bottom-left-radius: 30px;
         }
-        button:active {
-            transform: scale(0.95);
+        
+        .navigation ul li:hover,
+        .navigation ul li.hovered {
+          background-color: var(--white);
         }
-        a {
-            text-decoration: none;
+        
+        .navigation ul li:nth-child(1) {
+          margin-bottom: 40px;
+          pointer-events: none;
         }
+        
+        .navigation ul li a {
+          position: relative;
+          display: block;
+          width: 100%;
+          display: flex;
+          text-decoration: none;
+          color: var(--white);
+        }
+        .navigation ul li:hover a,
+        .navigation ul li.hovered a {
+          color: var(--maroon);
+        }
+        
+        .navigation ul li a .icon {
+          position: relative;
+          display: block;
+          min-width: 60px;
+          height: 60px;
+          line-height: 75px;
+          text-align: center;
+        }
+        .navigation ul li a .icon ion-icon {
+          font-size: 1.75rem;
+        }
+        
+        .navigation ul li a .title {
+          position: relative;
+          display: block;
+          padding: 0 10px;
+          height: 60px;
+          line-height: 60px;
+          text-align: start;
+          white-space: nowrap;
+        }
+        
+        /* --------- curve outside ---------- */
+        .navigation ul li:hover a::before,
+        .navigation ul li.hovered a::before {
+          content: "";
+          position: absolute;
+          right: 0;
+          top: -50px;
+          width: 50px;
+          height: 50px;
+          background-color: transparent;
+          border-radius: 50%;
+          box-shadow: 35px 35px 0 10px var(--white);
+          pointer-events: none;
+        }
+        .navigation ul li:hover a::after,
+        .navigation ul li.hovered a::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          bottom: -50px;
+          width: 50px;
+          height: 50px;
+          background-color: transparent;
+          border-radius: 50%;
+          box-shadow: 35px -35px 0 10px var(--white);
+          pointer-events: none;
+        }
+        
+        /* ===================== Main ===================== */
+        .main {
+          position: absolute;
+          width: calc(100% - 300px);
+          left: 300px;
+          min-height: 100vh;
+          background: var(--white);
+          transition: 0.5s;
+        }
+        .main.active {
+          width: calc(100% - 80px);
+          left: 80px;
+        }
+        
+        .topbar {
+          width: 100%;
+          height: 60px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 10px;
+        }
+        
+        .toggle {
+          position: relative;
+          width: 60px;
+          height: 60px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 2.5rem;
+          cursor: pointer;
+        }
+        
+        .search {
+          position: relative;
+          width: 400px;
+          margin: 0 10px;
+        }
+        
+        .search label {
+          position: relative;
+          width: 100%;
+        }
+        
+        .search label input {
+          width: 100%;
+          height: 40px;
+          border-radius: 40px;
+          padding: 5px 20px;
+          padding-left: 35px;
+          font-size: 18px;
+          outline: none;
+          border: 1px solid var(--black2);
+        }
+        
+        .search label ion-icon {
+          position: absolute;
+          top: 0;
+          left: 10px;
+          font-size: 1.2rem;
+        }
+        
+        .user {
+          position: relative;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          overflow: hidden;
+          cursor: pointer;
+        }
+        
+        .user img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        /* ======================= Cards ====================== */
+        .cardBox {
+        position: relative;
+        width: 100%;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); /* 5 kolom di baris pertama */
+        grid-gap: 30px;
+        }
+
+        .cardBox .card {
+        position: relative;
+        background: var(--white);
+        padding: 30px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-between;
+        cursor: pointer;
+        box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Atur jumlah kolom untuk baris berikutnya */
+        .cardBox .card:nth-child(n+6):nth-child(-n+10) {
+        grid-column: span 1;
+        }
+
+        .cardBox .card:nth-child(n+11):nth-child(-n+14) {
+        grid-column: span 1;
+        }
+
+        /* Responsif - jika layar lebih kecil dari 1024px, 3 kolom */
+        @media screen and (max-width: 1024px) {
+        .cardBox {
+            grid-template-columns: repeat(3, 1fr); /* 3 kolom */
+        }
+        }
+
+        /* Responsif - jika layar lebih kecil dari 768px, 2 kolom */
+        @media screen and (max-width: 768px) {
+        .cardBox {
+            grid-template-columns: repeat(2, 1fr); /* 2 kolom */
+        }
+        }
+
+        /* Responsif - jika layar lebih kecil dari 480px, 1 kolom */
+        @media screen and (max-width: 480px) {
+        .cardBox {
+            grid-template-columns: 1fr; /* 1 kolom */
+        }
+        }
+
+        
+        .cardBox .card .numbers {
+          position: relative;
+          font-weight: 300;
+          font-size: 1.5rem;
+          color: var(--maroon);
+        }
+    
+        
+        .cardBox .card .cardName {
+          color: var(--black2);
+          font-size: 1.1rem;
+          margin-top: 5px;
+        }
+        
+        .cardBox .card .iconBx {
+          font-size: 3.5rem;
+          color: var(--black2);
+        }
+        
+        .cardBox .card:hover {
+          background: var(--maroon);
+        }
+        .cardBox .card:hover .numbers,
+        .cardBox .card:hover .cardName,
+        .cardBox .card:hover .iconBx {
+          color: var(--white);
+        }
+        
+        /* ================== Order Details List ============== */
+        .details {
+          position: relative;
+          width: 100%;
+          padding: 20px;
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          grid-gap: 30px;
+          /* margin-top: 10px; */
+        }
+        
+        .details .recentOrders {
+          position: relative;
+          display: grid;
+          min-height: 500px;
+          background: var(--white);
+          padding: 20px;
+          box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+          border-radius: 20px;
+        }
+        
+        .details .cardHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+        .cardHeader h2 {
+          font-weight: 600;
+          color: var(--maroon);
+        }
+        .cardHeader .btn {
+          position: relative;
+          padding: 5px 10px;
+          background: var(--maroon);
+          text-decoration: none;
+          color: var(--white);
+          border-radius: 6px;
+        }
+        
+        .details table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        .details table thead td {
+          font-weight: 600;
+        }
+        .details .recentOrders table tr {
+          color: var(--black1);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .details .recentOrders table tr:last-child {
+          border-bottom: none;
+        }
+        .details .recentOrders table tbody tr:hover {
+          background: var(--maroon);
+          color: var(--white);
+        }
+        .details .recentOrders table tr td {
+          padding: 10px;
+        }
+        .details .recentOrders table tr td:last-child {
+          text-align: end;
+        }
+        .details .recentOrders table tr td:nth-child(2) {
+          text-align: end;
+        }
+        .details .recentOrders table tr td:nth-child(3) {
+          text-align: center;
+        }
+        .status.delivered {
+          padding: 2px 4px;
+          background: #8de02c;
+          color: var(--white);
+          border-radius: 4px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .status.pending {
+          padding: 2px 4px;
+          background: #e9b10a;
+          color: var(--white);
+          border-radius: 4px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .status.return {
+          padding: 2px 4px;
+          background: #f00;
+          color: var(--white);
+          border-radius: 4px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .status.inProgress {
+          padding: 2px 4px;
+          background: #1795ce;
+          color: var(--white);
+          border-radius: 4px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        
+        .recentCustomers {
+          position: relative;
+          display: grid;
+          min-height: 500px;
+          padding: 20px;
+          background: var(--white);
+          box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+          border-radius: 20px;
+        }
+        .recentCustomers .imgBx {
+          position: relative;
+          width: 40px;
+          height: 40px;
+          border-radius: 50px;
+          overflow: hidden;
+        }
+        .recentCustomers .imgBx img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .recentCustomers table tr td {
+          padding: 12px 10px;
+        }
+        .recentCustomers table tr td h4 {
+          font-size: 16px;
+          font-weight: 500;
+          line-height: 1.2rem;
+        }
+        .recentCustomers table tr td h4 span {
+          font-size: 14px;
+          color: var(--black2);
+        }
+        .recentCustomers table tr:hover {
+          background: var(--maroon);
+          color: var(--white);
+        }
+        .recentCustomers table tr:hover td h4 span {
+          color: var(--white);
+        }
+        
+        /* ====================== Responsive Design ========================== */
+        @media (max-width: 991px) {
+          .navigation {
+            left: -300px;
+          }
+          .navigation.active {
+            width: 300px;
+            left: 0;
+          }
+          .main {
+            width: 100%;
+            left: 0;
+          }
+          .main.active {
+            left: 300px;
+          }
+          .cardBox {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .details {
+            grid-template-columns: 1fr;
+          }
+          .recentOrders {
+            overflow-x: auto;
+          }
+          .status.inProgress {
+            white-space: nowrap;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .cardBox {
+            grid-template-columns: repeat(1, 1fr);
+          }
+          .cardHeader h2 {
+            font-size: 20px;
+          }
+          .user {
+            min-width: 40px;
+          }
+          .navigation {
+            width: 100%;
+            left: -100%;
+            z-index: 1000;
+          }
+          .navigation.active {
+            width: 100%;
+            left: 0;
+          }
+          .toggle {
+            z-index: 10001;
+          }
+          .main.active .toggle {
+            color: #fff;
+            position: fixed;
+            right: 0;
+            left: initial;
+          }
+        
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+      }
+      table th, table td {
+          border: 1px solid #ddd;
+          padding: 8px;
+      }
+      table th {
+          background-color: #f2f2f2;
+      }
+      .form-container {
+          margin-bottom: 20px;
+      }
+      .form-container input, .form-container select {
+          padding: 8px;
+          margin: 5px 0;
+          width: calc(100% - 16px);
+      }
+      .form-container button {
+          padding: 10px;
+          background: #007bff;
+          color: white;
+          border: none;
+          cursor: pointer;
+          width: 100%;
+      }
+      .form-container button:hover {
+          background: #0056b3;
+      }
+      .flash {
+          padding: 10px;
+          margin-bottom: 20px;
+      }
+      .flash.success {
+          background-color: #d4edda;
+          color: #155724;
+      }
+      .flash.danger {
+          background-color: #f8d7da;
+          color: #721c24;
+      }
+        
     </style>
 </head>
+
+
 <body>
-    <div class="container">
-        <h1>Upload Data</h1>
-        <div class="button-container">
-            <a href="{{ url_for('upload_cn42n') }}"><button>CN42N</button></a>
-            <a href="{{ url_for('upload_cn43n') }}"><button>CN43N</button></a>
-            <a href="{{ url_for('upload_cn55n') }}"><button>CN55N</button></a>
-            <a href="{{ url_for('upload_va05') }}"><button>VA05</button></a>
-            <a href="{{ url_for('upload_me5j') }}"><button>ME5J</button></a>
-            <a href="{{ url_for('upload_me2j') }}"><button>ME2J</button></a>
-            <a href="{{ url_for('upload_mb51_gr') }}"><button>MB51_GR</button></a>
-            <a href="{{ url_for('upload_mb51_gi') }}"><button>MB51_GI</button></a>
-            <a href="{{ url_for('upload_mb52') }}"><button>MB52</button></a>
-            <a href="{{ url_for('upload_matspec') }}"><button>MATSPEC</button></a>
-        </div>
-    </div>
+  <!-- =============== Navigation ================ -->
+  <div class="container">
+      <div class="navigation">
+          <ul>
+              <li>
+                  <a href="#">
+                      <span class="icon">
+                          <ion-icon name="train"></ion-icon>
+                      </span>
+                      <span class="title">DASHBOARD TEKNOLOGI INFORMASI</span>
+                  </a>
+              </li>
+              <li>
+                  <a href="#" id="masterDataLink">
+                      <span class="icon">
+                          <ion-icon name="home-outline"></ion-icon>
+                      </span>
+                      <span class="title">MASTER DATA</span>
+                  </a>
+              </li>
+              <li>
+                  <a href="/auth/admin/add_user" id="aksesPenggunaLink">
+                      <span class="icon">
+                          <ion-icon name="people-outline"></ion-icon>
+                      </span>
+                      <span class="title">Akses Pengguna</span>
+                  </a>
+              </li>
+              <li>
+                  <a href="/logout">
+                      <span class="icon">
+                          <ion-icon name="log-out-outline"></ion-icon>
+                      </span>
+                      <span class="title">Sign Out</span>
+                  </a>
+              </li>
+          </ul>
+      </div>
+
+      <!-- ========================= Main ==================== -->
+      <div class="main">
+          <div class="topbar">
+              <div class="toggle">
+                  <ion-icon name="menu-outline"></ion-icon>
+              </div>
+
+              <div class="search">
+                  <label>
+                      <input type="text" placeholder="Search here">
+                      <ion-icon name="search-outline"></ion-icon>
+                  </label>
+              </div>
+
+              <div class="user">
+                  <img src="assets/imgs/customer01.jpg" alt="User Profile">
+              </div>
+          </div>
+
+          <!-- Master Data Section -->
+          <div id="masterDataSection">
+              <h1>DATA MASTER</h1>
+              
+              <!-- Kategori Sales Order -->
+              <div class="category">
+                  <h2>Kategori Sales Order</h2>
+                  <div class="cardBox">
+                    <a href="{{ url_for('upload_cn43n') }}" class="card">
+                      <div>
+                          <div class="numbers"> Data CN43N</div>
+                      </div>
+                      <div class="iconBx">
+                          <ion-icon name="document-outline"></ion-icon>
+                      </div>
+                  </a>
+                    <a href="{{ url_for('upload_va05') }}" class="card">
+                      <div>
+                          <div class="numbers"> Data VA05</div>
+                      </div>
+                      <div class="iconBx">
+                          <ion-icon name="document-outline"></ion-icon>
+                      </div>
+                  </a>
+                    <a href="{{ url_for('upload_barang') }}" class="card">
+                      <div>
+                          <div class="numbers"> Data Barang</div>
+                      </div>
+                      <div class="iconBx">
+                          <ion-icon name="document-outline"></ion-icon>
+                      </div>
+                  </a>
+                  <a href="{{ url_for('upload_jasa') }}" class="card">
+                    <div>
+                        <div class="numbers"> Data Jasa</div>
+                    </div>
+                    <div class="iconBx">
+                        <ion-icon name="document-outline"></ion-icon>
+                    </div>
+                </a>
+
+                  </div>
+              </div>
+
+              <!-- Kategori Material -->
+              <div class="category">
+                  <h2>Kategori Material</h2>
+                  <div class="card-container">
+                  <div class="cardBox">
+                    <a href="{{ url_for('upload_me5j') }}" class="card">
+                      <div>
+                          <div class="numbers"> Data ME5J</div>
+                      </div>
+                      <div class="iconBx">
+                          <ion-icon name="document-outline"></ion-icon>
+                      </div>
+                  </a>
+  
+
+                  <a href="{{ url_for('upload_me2j') }}" class="card">
+                    <div>
+                        <div class="numbers"> Data ME2J</div>
+                    </div>
+                    <div class="iconBx">
+                        <ion-icon name="document-outline"></ion-icon>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('upload_me5a') }}" class="card">
+                  <div>
+                      <div class="numbers"> Data ME5A</div>
+                  </div>
+                  <div class="iconBx">
+                      <ion-icon name="document-outline"></ion-icon>
+                  </div>
+              </a>
+
+
+              <a href="{{ url_for('upload_mb51_gr') }}" class="card">
+                <div>
+                    <div class="numbers"> Data MB51 GR</div>
+                </div>
+                <div class="iconBx">
+                    <ion-icon name="document-outline"></ion-icon>
+                </div>
+            </a>
+
+
+            <a href="{{ url_for('upload_mb51_gi') }}" class="card">
+              <div>
+                  <div class="numbers"> Data MB51 GI</div>
+              </div>
+              <div class="iconBx">
+                  <ion-icon name="document-outline"></ion-icon>
+              </div>
+          </a>
+
+          <a href="{{ url_for('upload_mb52') }}" class="card">
+            <div>
+                <div class="numbers"> Data MB52</div>
+            </div>
+            <div class="iconBx">
+                <ion-icon name="document-outline"></ion-icon>
+            </div>
+        </a>
+
+
+        <a href="{{ url_for('upload_matspec') }}" class="card">
+          <div>
+              <div class="numbers"> Data MATSPEC</div>
+          </div>
+          <div class="iconBx">
+              <ion-icon name="document-outline"></ion-icon>
+          </div>
+      </a>
+
+
+                    </div>
+                  </div>
+              </div>
+          </div>
+
+        
+      </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+      document.getElementById('masterDataLink').addEventListener('click', function() {
+          document.getElementById('masterDataSection').style.display = 'block';
+          document.getElementById('aksesPenggunaSection').style.display = 'none';
+      });
+
+      document.getElementById('aksesPenggunaLink').addEventListener('click', function() {
+          document.getElementById('masterDataSection').style.display = 'none';
+          document.getElementById('aksesPenggunaSection').style.display = 'block';
+      });
+  </script>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 </body>
-</html>

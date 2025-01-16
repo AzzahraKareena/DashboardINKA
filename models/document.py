@@ -6,11 +6,12 @@ class DocumentModel:
     def __init__(self):
         self.connection = pymysql.connect(
 
-            host="36.94.112.123",  # IP server database
-            user="it",             # Username database
-            password="ITIMS321",   # Password database
-            database="dashboard",  # Nama database
-            port=3306              # Port MySQL (default: 3306)
+           host="36.94.112.125",  # IP server database
+            user="it_dev",             # Username database
+            password="MyPassword1!",   # Password database
+            database="dashboard", 
+         port = 3306 # Nama database
+              # Port MySQL (default: 3306)
         )
         
     def save_to_database(self, csv_file, selected_columns, table_name):

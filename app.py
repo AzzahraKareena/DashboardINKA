@@ -4,7 +4,6 @@ from collections import OrderedDict
 import json
 import mysql.connector
 from werkzeug.utils import secure_filename
-from controllers.document_controller import DocumentController
 from controllers.mb52_controller import mb52_blueprint
 from controllers.MATSPECController import matspec_blueprint
 from controllers.mb51_controller import MB51GRController
@@ -14,19 +13,28 @@ from controllers.CN55NController import cn55n_blueprint
 from controllers.VA05Controller import va05_blueprint
 from controllers.ME5JController import me5j_blueprint
 from controllers.ME2JController import me2j_blueprint
+from controllers.ME5AController import me5a_blueprint
 from controllers.MB51_GIController import mb51_gi_blueprint
+from controllers.barangController import barang_blueprint
+from controllers.jasaController import jasa_blueprint
+from controllers.persenController import persen_blueprint
+from controllers.auth_controller import auth_blueprint
+from controllers.kategori_controller import kategori_blueprint
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 
+
 # Database configuration
 db_config = {
-    'host': '36.94.112.123',       # atau '127.0.0.1' jika server lokal
-    'user': 'it',            # ganti dengan user database kamu
-    'password': 'ITIMS321',            # ganti dengan password yang sesuai
-    'database': 'dashboard',   # ganti dengan nama database kamu
-    'port': 3306               # port default MySQL
+        'host': '36.94.112.125',
+        'user': 'it_dev',
+        'password': 'MyPassword1!',  # Ubah jika ada password
+        'database': 'dashboard',
+        'port': '3306',
+       
 }
 def get_db_connection():
     try:
@@ -52,7 +60,8 @@ ALLOWED_EXTENSIONS = {'htm', 'html', 'mhtml'}
 # mb51_gr_blueprint = Blueprint('mb51_gr', __name__) 
 
 # Create instances of controllers
-document_controller = DocumentController()
+
+app.register_blueprint(auth_blueprint, url_prefix='/auth')
 # app.register_blueprint(mb51_gr_blueprint)
 app.register_blueprint(cn42n_blueprint)
 app.register_blueprint(cn43n_blueprint)  # Register the CN43N blueprint
@@ -62,10 +71,17 @@ app.register_blueprint(me5j_blueprint)
 app.register_blueprint(me2j_blueprint)
 app.register_blueprint(mb51_gi_blueprint)
 app.register_blueprint(mb52_blueprint)
+app.register_blueprint(me5a_blueprint)
+app.register_blueprint(barang_blueprint)
+app.register_blueprint(jasa_blueprint)
+app.register_blueprint(persen_blueprint)
 # app.register_blueprint(mb51_gr_blueprint)
 # app.register_blueprint(matspec_blueprint, url_prefix='/matspec')
 app.register_blueprint(matspec_blueprint)
 mb51_gr_controller = MB51GRController()
+app.register_blueprint(kategori_blueprint)
+
+
 
 # Function to check allowed file extensions
 def allowed_file(filename):
@@ -74,7 +90,53 @@ def allowed_file(filename):
 # Route for the main upload page
 @app.route('/')
 def index():
+    return render_template('landing_page.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/logout')
+def logout():
+    return render_template('logout.html')
+
+
+@app.route('/upload', methods=['GET'])
+def upload():
     return render_template('upload.html')
+
+@app.route('/kategori')
+def kategori_index():
+    return render_template('kategori/index.html')
+
+@app.route('/web')
+def web():
+    return render_template('web.html')
+
+@app.route('/kategori/create')
+def kategori_create():
+    return render_template('kategori/create.html')
+
+@app.route('/kategori/edit/<int:id>')
+def kategori_edit(id):
+    return render_template('kategori/edit.html')
+
+
+@app.route('/users', methods=['GET'])
+def show_users():
+    # Connect to the database
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Fetch all users from the database
+    cursor.execute("SELECT * FROM users")  # Assuming the table is named 'users'
+    users = cursor.fetchall()
+    
+    cursor.close()
+    connection.close()
+    
+    # Pass the users data to the template
+    return render_template('add_user.html', users=users)
 
 # Route to handle uploading CN42N documents
 @app.route('/upload/cn42n', methods=['GET', 'POST'])
@@ -98,6 +160,22 @@ def upload_cn42n():
             flash('No file selected or unsupported file type.', 'error')
         
     return render_template('upload_cn42n.html')
+
+# Rute untuk halaman upload dan tabel
+@app.route('/cn42n', methods=['GET'])
+def cn42n_page():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Ambil data dari tabel CN42N
+        cursor.execute("SELECT `Project_definition`, `Name` FROM CN42N LIMIT 10")
+        data = cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+    
+    # Render template dengan data dari database
+    return render_template('upload_cn42n.html', data=data)
 
 # Route to handle uploading CN43N documents
 @app.route('/upload/cn43n', methods=['GET', 'POST'])
@@ -214,6 +292,29 @@ def upload_me2j():
         
     return render_template('upload_me2j.html')
 
+# Route to handle uploading ME2J documents
+@app.route('/upload/me5a', methods=['GET', 'POST'])
+def upload_me5a():
+    if request.method == 'POST':
+        file = request.files['file']
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            mhtml_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(mhtml_file_path)
+
+            try:
+                me2j_blueprint.upload_me5a(mhtml_file_path)
+                flash('ME2J file uploaded and processed successfully!', 'success')
+                return redirect(url_for('upload_me5a'))
+            except Exception as e:
+                flash(f"Error processing ME5A file: {str(e)}", 'error')
+                print(f"Exception occurred: {str(e)}")  # For debugging purposes
+        else:
+            flash('No file selected or unsupported file type.', 'error')
+        
+    return render_template('upload_me5a.html')
+
 # Route to handle uploading MB51_GI documents
 @app.route('/upload/mb51_gi', methods=['GET', 'POST'])
 def upload_mb51_gi():
@@ -316,6 +417,75 @@ def upload_mb52():
         
     return render_template('upload_mB52.html')
 
+# Route to handle uploading  documents
+@app.route('/upload/barang', methods=['GET', 'POST'])
+def upload_barang():
+    if request.method == 'POST':
+        file = request.files['file']
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            mhtml_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(mhtml_file_path)
+
+            try:
+                barang_blueprint.upload_barang(mhtml_file_path)
+                flash('barang file uploaded and processed successfully!', 'success')
+                return redirect(url_for('upload_barang'))
+            except Exception as e:
+                flash(f"Error processing barang file: {str(e)}", 'error')
+                print(f"Exception occurred: {str(e)}")  # For debugging purposes
+        else:
+            flash('No file selected or unsupported file type.', 'error')
+        
+    return render_template('upload_barang.html')
+
+
+@app.route('/upload/jasa', methods=['GET', 'POST'])
+def upload_jasa():
+    if request.method == 'POST':
+        file = request.files['file']
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            mhtml_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(mhtml_file_path)
+
+            try:
+                jasa_blueprint.upload_jasa(mhtml_file_path)
+                flash('jasa file uploaded and processed successfully!', 'success')
+                return redirect(url_for('upload_jasa'))
+            except Exception as e:
+                flash(f"Error processing jasa file: {str(e)}", 'error')
+                print(f"Exception occurred: {str(e)}")  # For debugging purposes
+        else:
+            flash('No file selected or unsupported file type.', 'error')
+        
+    return render_template('upload_jasa.html')
+
+# Route to handle uploading ME2J documents
+@app.route('/upload/persen', methods=['GET', 'POST'])
+def upload_persen():
+    if request.method == 'POST':
+        file = request.files['file']
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            mhtml_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(mhtml_file_path)
+
+            try:
+                persen_blueprint.upload_persen(mhtml_file_path)
+                flash('persen file uploaded and processed successfully!', 'success')
+                return redirect(url_for('upload_persen'))
+            except Exception as e:
+                flash(f"Error processing persen file: {str(e)}", 'error')
+                print(f"Exception occurred: {str(e)}")  # For debugging purposes
+        else:
+            flash('No file selected or unsupported file type.', 'error')
+        
+    return render_template('upload_persen.html')
+
 
 # # Inisialisasi controller
 # matspec_controller = MatspecController(db_config)
@@ -359,7 +529,7 @@ def get_cn42n():
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT `Project definition`, `Name` FROM cn42n")
+        cursor.execute("SELECT `Project_definition`, `Name` FROM cn42n")
         result = cursor.fetchall()
         return jsonify(result), 200
     except mysql.connector.Error as err:
@@ -374,7 +544,7 @@ def get_cn43n():
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT `Project definition`, `WBS element`, `Name`, `Level`, `Status` FROM cn43n")
+        cursor.execute("SELECT `Project_definition`, `WBS_element`, `Name`, `Level`, `Status` FROM cn43n")
         result = cursor.fetchall()
         return jsonify(result), 200
     except mysql.connector.Error as err:
@@ -389,7 +559,7 @@ def get_cn55n():
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT `Project definition`, `WBS Element`, `Sales Document`, `Sales Document Item` FROM cn55n")
+        cursor.execute("SELECT `Project_definition`, `WBS_Element`, `Sales_Document`, `Sales_Document_Item` FROM cn55n")
         result = cursor.fetchall()
         return jsonify(result), 200
     except mysql.connector.Error as err:
@@ -405,13 +575,13 @@ def get_va05():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT `Sales Document`, `Sales Document Type`, `Document Date`, 
-                   `Purchase order number`, `Status`, `Item (SD)`, `Description`, 
-                   `Material`, `Confirmed Quantity`, `Delivery Date`, `Created by`, 
-                   `Sold-to party`, `Name 1`, `Exchange Rate`, `Order Quantity`, 
-                   `Base Unit of Measure`, `Net price`, `Pricing unit`, 
-                   `Unit of measure`, `Pricing date`, `Net Value`, 
-                   `Document Currency`, `Goods Issue Date`, `Created on` 
+            SELECT `Sales_Document`, `Sales_Document_Type`, `Document_Date`, 
+                   `Purchase_order_number`, `Status`, `Item_(SD)`, `Description`, 
+                   `Material`, `Confirmed_Quantity`, `Delivery_Date`, `Created_by`, 
+                   `Sold-to_party`, `Name_1`, `Exchange_Rate`, `Order_Quantity`, 
+                   `Base_Unit_of_Measure`, `Net_price`, `Pricing_unit`, 
+                   `Unit_of_measure`, `Pricing_date`, `Net_Value`, 
+                   `Document_Currency`, `Goods_Issue_Date`, `Created_on` 
             FROM va05
         """)
         result = cursor.fetchall()
@@ -429,13 +599,13 @@ def get_me5j():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT `WBS Element`, `Purchase Requisition`, `Item of Requisition`, 
-                   `Requisition Date`, `Deliv. date(From/to)`, `Deletion Indicator`, 
-                   `Processing status`, `Material`, `Short Text`, `Material Group`, 
-                   `Requisitioner`, `Purchasing Group`, `Quantity Requested`, 
-                   `Unit of Measure`, `Purchase Order`, `Purchase Order Date`, 
-                   `Purchase Order Item`, `Quantity Ordered`, `Document Type`, 
-                   `Storage Location`
+            SELECT `WBS_Element`, `Purchase_Requisition`, `Item_of_Requisition`, 
+                   `Requisition_Date`, `Deliv.date(From/to)`, `Deletion_Indicator`, 
+                   `Processing_status`, `Material`, `Short_Text`, `Material_Group`, 
+                   `Requisitioner`, `Purchasing_Group`, `Quantity_Requested`, 
+                   `Unit_of_Measure`, `Purchase_Order`, `Purchase_Order_Date`, 
+                   `Purchase_Order_Item`, `Quantity_Ordered`, `Document_Type`, 
+                   `Storage_Location`
             FROM me5j
         """)
         result = cursor.fetchall()
@@ -453,12 +623,12 @@ def get_me2j():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT `WBS Element`, `Purchasing Document`, `Item`, `Material`, 
-                   `Deletion Indicator`, `Short Text`, `Order Quantity`, `Order Unit`, 
-                   `Document Date`, `Vendor/supplying plant`, `Still to be delivered (value)`, 
-                   `Still to be invoiced (qty)`, `Still to be invoiced (val.)`, `Net price`, 
-                   `Still to be delivered (qty)`, `Currency`, `Acct Assignment Cat.`, 
-                   `PO history/release documentation` 
+            SELECT `WBS_Element`, `Purchase_Order`, `Item`, `Material`, 
+                   `Deletion_Indicator`, `Short_Text`, `Order_Quantity`, `Order_Unit`, 
+                   `Document_Date`, `Vendor/supplying_plant`, `Still_to_be_delivered_(value)`, 
+                   `Still_to_be_invoiced_(qty)`, `Still_to_be_invoiced_(val.)`, `Net_price`, 
+                   `Still_to_be_delivered_(qty)`, `Currency`, `Acct_Assignment_Cat.`, 
+                   `PO_history/release_documentation` 
             FROM me2j
         """)
         result = cursor.fetchall()
@@ -476,10 +646,10 @@ def get_mb51_gr():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT `Posting Date`, `Material`, `Material Description`, `Purchase Order`, 
-                   `Document Date`, `Qty in Un. of Entry`, `Item PO`, `Movement Type`, 
-                   `WBS Element`, `Unit of Entry`,`Item GR`,`Amount in LC`, `Material Document`, 
-                   `User Name`, `Document Header Text`, `Reference`, `Order`, 
+            SELECT `Posting_Date`, `Material`, `Material_Description`, `Purchase_Order`, 
+                   `Document_Date`, `Qty_in_Un_of_Entry`, `Item_PO`, `Movement_Type`, 
+                   `WBS_Element`, `Unit_of_Entry`,`Item_GR`,`Amount_in_LC`, `Material_Document`, 
+                   `User_Name`, `Document_Header_Text`, `Reference`, `Order`, 
                    `Vendor`, `Reservation`, `Batch`
             FROM mb51_gr
         """)
@@ -498,11 +668,9 @@ def get_mb51_gi():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT `Posting Date`, `Material`, `Material Description`, `Purchase Order`, 
-                   `Document Date`, `Qty in Un. of Entry`, `Item`, `Movement Type`, 
-                   `WBS Element`, `Unit of Entry`, `Amount in LC`, `Material Document`, 
-                   `User Name`, `Document Header Text`, `Reference`, `Order`, 
-                   `Vendor`, `Reservation`, `Batch`
+            SELECT `Posting_Date`, `Material`, `Material_Description`, `Purchase_Order`, `Document_Date`, 
+            `Qty_in_Un_of_Entry`, `Item`, `Movement_Type`, `WBS_Element`, `Unit_of_Entry`, `Amount_in_LC`, 
+            `Material_Document`, `User_Name`, `Document_Header_Text`, `Reference`, `Order`, `Vendor`, `Reservation`, `Batch`
             FROM mb51_gi
         """)
         result = cursor.fetchall()
@@ -520,8 +688,8 @@ def get_mb52():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT `Material`, `Plnt`, `SLoc`, `S`, `Special stock number`, 
-                   `BUn`, `Unrestricted`, `Crcy`, `Value Unrestricted` 
+            SELECT `Material`, `Plnt`, `SLoc`, `S`, `WBS_Element`, 
+                   `BUn`, `Unrestricted`, `Crcy`, `Value_Unrestricted` 
             FROM mb52
         """)
         result = cursor.fetchall()
@@ -539,10 +707,8 @@ def get_matspec():
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT `Material`, `Material Description`, `Text`, 
-                   `Base Unit of Measure`, `Material Group`, `Material Type`, 
-                   `Plant`, `DF at client level`, `Valuation Class`, 
-                   `Created by`, `Last Change`, `Price` 
+            SELECT `Material`, `Material_Description`, `Text`, `Base_Unit_of_Measure`, `Material_Group`, `Material_Type`, 
+            `Plant`, `DF_at_client_level`, `Valuation_Class`, `Created_by`, `Last_Change`, `Price` 
             FROM matspec
         """)
         result = cursor.fetchall()
@@ -552,6 +718,75 @@ def get_matspec():
     finally:
         cursor.close()
         conn.close()
+
+# Fungsi untuk mengambil data dari tabel matspec
+@app.route('/api/me5a', methods=['GET'])
+def get_me5a():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT acct_assignment_cat, requisitioner, purchase_requisition, 
+                        req_tracking_number, item_of_requisition, release_indicator, 
+                        requisition_date, release_date, changed_on, deliv_date, deletion_indicator, processing_status, 
+                        material, short_text, unit_of_measure, material_group, 
+                        purchasing_group, closed
+            FROM me5a
+        """)
+        result = cursor.fetchall()
+        return jsonify(result), 200
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Fungsi untuk mengambil data dari tabel matspec
+@app.route('/api/barang', methods=['GET'])
+def get_barang():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT project_def, wbs_element, so_document,so_date, req_delivery_date,duration, customer_po_number, customer_code, customer_name, 
+            material_code, material_name, no, qty_so, uom, unit_price_so, total_price_so, deliver_qty, 
+            uom_1, unit_price_do, total_price_do, to_be_deliver_qty, invoiced_qty, uom_2, unit_price_billing, 
+            total_price_billing, to_be_invoice, status, 
+            unit_price_invoice, to_be_deliver_invoice
+        FROM barang;
+
+        """)
+        result = cursor.fetchall()
+        return jsonify(result), 200
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Fungsi untuk mengambil data dari tabel matspec
+@app.route('/api/jasa', methods=['GET'])
+def get_jasa():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT project_def, wbs_element, sales_document, so_date, customer_po_number,
+                    sold_to_party,customer_name, material_code, material_name, no_item, qty_so, uom,
+                    unit_price_so, total_price_so, total_price_billing, sisa_price_billing, status
+            FROM jasa
+        """)
+        result = cursor.fetchall()
+        return jsonify(result), 200
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/report')
+def report():
+    return render_template('report.html')
 
 
 # Start the Flask application

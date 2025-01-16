@@ -9,7 +9,7 @@ class MB51GIProcessor:
         'Material Description': 'Material_Description',
         'Purchase Order': 'Purchase_Order',
         'Document Date': 'Document_Date',
-        'Qty in Un. of Entry': 'Qty_in_Un.of_Entry',
+        'Qty in Un. of Entry': 'Qty_in_Un_of_Entry',
         'Item': 'Item',
         'Movement Type': 'Movement_Type',
         'WBS Element': 'WBS_Element',

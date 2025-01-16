@@ -10,16 +10,16 @@ def process_mb52_data(file_path):
     tbody = soup.find('tbody')
 
     conn = mysql.connector.connect(
-        host="36.94.112.123",  # IP server database
-        user="it",             # Username database
-        password="ITIMS321",   # Password database
-        database="dashboard",  # Nama database
-        port=3306              # Port MySQL (default: 3306)
+        host="36.94.112.125",  # IP server database
+        user="it_dev",             # Username database
+        password="MyPassword1!",   # Password database
+        database="dashboard", 
+        port = 3306 
     )
     cursor = conn.cursor()
 
     # Hapus semua data lama di tabel MB52
-    cursor.execute("DELETE FROM `MB52`")
+    cursor.execute("DELETE FROM `mb52`")
     conn.commit()
 
     is_first_row = True  # Variabel untuk melacak baris pertama
@@ -48,7 +48,7 @@ def process_mb52_data(file_path):
 
             placeholders = ', '.join(['%s'] * len(data))
             columns = ', '.join([f'`{key}`' for key in data.keys()])
-            sql = f"INSERT INTO `MB52` ({columns}) VALUES ({placeholders})"
+            sql = f"INSERT INTO `mb52` ({columns}) VALUES ({placeholders})"
 
             try:
                 cursor.execute(sql, tuple(data.values()))

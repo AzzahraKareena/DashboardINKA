@@ -2,41 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload VA05 File</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f7f5f5;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+        }
+        .header {
+            background-color: #800000; /* Maroon color */
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
         }
         .container {
+            display: flex;
+            flex-direction: column;
+            margin: 20px;
+            gap: 20px;
+        }
+        .upload-section {
             background-color: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
         }
-        h1 {
-            color: #333;
+        .upload-section h2 {
+            color: #800000;
             margin-bottom: 20px;
+            text-align: center;
         }
-        input[type="file"] {
+        .upload-section input[type="file"] {
             margin: 20px 0;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
-            box-sizing: border-box;
         }
-        button {
+        .upload-section button {
             padding: 12px 20px;
-            background-color: #4CAF50;
+            background-color: #800000;
             color: white;
             border: none;
             border-radius: 5px;
@@ -44,34 +58,173 @@
             transition: background-color 0.3s, transform 0.2s;
             font-size: 16px;
             width: 100%;
-            margin-bottom: 10px; /* Add margin for spacing */
         }
-        button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
+        .upload-section button:hover {
+            background-color: #a52a2a;
         }
-        button:active {
-            transform: scale(0.95);
+        .table-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* Enable horizontal scrolling */
         }
-        .back-button {
-            background-color: #007BFF;
-            width: 100px;
-            height: 40px; /* Blue color for the back button */
+        .table-section h2 {
+            color: #800000;
+            margin-bottom: 20px;
         }
-        .back-button:hover {
-            background-color: #0056b3;
-             /* Darker blue on hover */
+        .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .table-section th, .table-section td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .table-section th {
+            background-color: #800000;
+            color: white;
+        }
+        .table-section tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        /* Sticky header for the table */
+        .table-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Upload VA05 File</h1>
-        <form action="/va05/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <button type="submit">Upload</button>
-        </form>
-        <a href="/"><button class="back-button">Kembali</button></a>
+    <div class="header">
+        VA05 Management
     </div>
+
+    <div class="container">
+        <!-- Form Upload Section -->
+        <div class="upload-section">
+            <h2>Upload File</h2>
+            <form id="uploadForm" action="/va05/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="button" id="uploadButton">Upload</button>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <h2>Data VA05</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead class="table-header">
+                        <tr>
+                            <th>Sales Document</th>
+                            <th>Sales Document Type</th>
+                            <th>Document Date</th>
+                            <th>Purchase Order Number</th>
+                            <th>Status</th>
+                            <th>Item (SD)</th>
+                            <th>Description</th>
+                            <th>Material</th>
+                            <th>Confirmed Quantity</th>
+                            <th>Delivery Date</th>
+                            <th>Created By</th>
+                            <th>Sold-to Party</th>
+                            <th>Name</th>
+                            <th>Exchange Rate</th>
+                            <th>Order Quantity</th>
+                            <th>Base Unit of Measure</th>
+                            <th>Net Price</th>
+                            <th>Pricing Unit</th>
+                            <th>Unit of Measure</th>
+                            <th>Pricing Date</th>
+                            <th>Net Value</th>
+                            <th>Document Currency</th>
+                            <th>Goods Issue Date</th>
+                            <th>Created On</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        <!-- Data from API will be appended here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and display data from the VA05 API
+        async function fetchAndDisplayData() {
+            try {
+                const response = await fetch('/api/va05'); // Change the API URL accordingly
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data from the API');
+                }
+
+                const data = await response.json();
+                const tableBody = document.getElementById('data-table');
+                const limitedData = data.slice(0, 10); // Limit to 10 rows for display
+
+                // Clear the existing table content
+                tableBody.innerHTML = "";
+
+                // Loop through the data and append rows to the table
+                limitedData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row['Sales_Document']}</td>
+                        <td>${row['Sales_Document_Type']}</td>
+                        <td>${row['Document_Date']}</td>
+                        <td>${row['Purchase_order_number']}</td>
+                        <td>${row['Status']}</td>
+                        <td>${row['Item_(SD)']}</td>
+                        <td>${row['Description']}</td>
+                        <td>${row['Material']}</td>
+                        <td>${row['Confirmed_Quantity']}</td>
+                        <td>${row['Delivery_Date']}</td>
+                        <td>${row['Created_by']}</td>
+                        <td>${row['Sold-to_party']}</td>
+                        <td>${row['Name_1']}</td>
+                        <td>${row['Exchange_Rate']}</td>
+                        <td>${row['Order_Quantity']}</td>
+                        <td>${row['Base_Unit_of_Measure']}</td>
+                        <td>${row['Net_price']}</td>
+                        <td>${row['Pricing_unit']}</td>
+                        <td>${row['Unit_of_measure']}</td>
+                        <td>${row['Pricing_date']}</td>
+                        <td>${row['Net_Value']}</td>
+                        <td>${row['Document_Currency']}</td>
+                        <td>${row['Goods_Issue_Date']}</td>
+                        <td>${row['Created_on']}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while fetching the data.');
+            }
+        }
+
+        // Call the function to fetch and display data when the page is loaded
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayData);
+
+        // SweetAlert for upload
+        document.getElementById("uploadButton").addEventListener("click", function () {
+            Swal.fire({
+                title: "Konfirmasi Upload",
+                text: "Kolom yang harus diunggah meliputi: Sales Document, Sales Document Type, Document Date, Purchase Order Number, Status, Item (SD), Description, Material, Confirmed Quantity, Delivery Date, Created By, Sold-to Party, Name 1, Exchange Rate, Order Quantity, Base Unit of Measure, Net Price, Pricing Unit, Unit of Measure, Pricing Date, Net Value, Document Currency, Goods Issue Date, dan Created On.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Lanjutkan Upload",
+                cancelButtonText: "Batal",
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById("uploadForm").submit();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

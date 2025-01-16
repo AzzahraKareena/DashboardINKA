@@ -23,11 +23,11 @@ def convert_html_to_csv(file_path):
 def insert_into_database(csv_path):
     # Konfigurasi koneksi ke database
     conn = mysql.connector.connect(
-        host="36.94.112.123",  # IP server database
-        user="it",             # Username database
-        password="ITIMS321",   # Password database
-        database="dashboard",  # Nama database
-        port=3306              # Port MySQL (default: 3306)
+        host="36.94.112.125",  # IP server database
+        user="it_dev",             # Username database
+        password="MyPassword1!",   # Password database
+        database="dashboard", 
+        port = 3306 
     )
 
     # Membuat cursor
@@ -35,7 +35,7 @@ def insert_into_database(csv_path):
 
     try:
         # Hapus data lama dari tabel CN42N
-        cursor.execute("TRUNCATE TABLE CN42N")
+        cursor.execute("TRUNCATE TABLE cn42n")
         print("Data lama dihapus.")
 
         # Buka file CSV dan baca isinya
@@ -44,7 +44,7 @@ def insert_into_database(csv_path):
             
             # Insert setiap baris data ke database
             for row in reader:
-                sql = "INSERT INTO CN42N (`Project_definition`, `Name`) VALUES (%s, %s)"
+                sql = "INSERT INTO cn42n (`Project_definition`, `Name`) VALUES (%s, %s)"
                 cursor.execute(sql, (row['Project definition'], row['Name']))
         
         # Commit transaksi

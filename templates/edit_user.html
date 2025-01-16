@@ -1,0 +1,14 @@
+<!-- User Form -->
+<div class="form-container">
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" value="{{ user.username }}" required>
+        <input type="email" name="email" placeholder="Email" value="{{ user.email }}" required>
+        <input type="text" name="nip" placeholder="NIP" value="{{ user.nip }}" required>
+        <input type="text" name="divisi" placeholder="Divisi" value="{{ user.divisi }}" required>
+        <select name="role" required>
+            <option value="user" {% if user.role == 'user' %}selected{% endif %}>User </option>
+            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+        </select>
+        <button type="submit">Simpan Perubahan</button>
+    </form>
+</div>

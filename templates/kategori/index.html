@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Kategori</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #964B00;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            width: 100%;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .table {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .table th, .table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .table th {
+            background-color: #f0f0f0;
+        }
+        .aksi {
+            text-align: center;
+        }
+        .aksi a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #337ab7;
+        }
+        .aksi a:hover {
+            color: #23527c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Daftar Kategori</h1>
+        </div>
+        <div class="table">
+            <table style="width: 100%;">
+                <tr>
+                    <th>No</th>
+                    <th>Nama Kategori</th>
+                    <th>Divisi</th>
+                    <th>Aksi</th>
+                </tr>
+                {% for kategori in kategoris %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ kategori.nama_kategori }}</td>
+                        <td>{{ kategori.divisi }}</td>
+                        <td class="aksi">
+                            <button type="button" class="btn btn-primary" onclick="location.href='{{ url_for('kategori.edit', id=kategori.id) }}'">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="location.href='{{ url_for('kategori.delete', id=kategori.id) }}'">
+                                <i class="fas fa-trash-alt"></i> Hapus
+                            </button>
+                            
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>

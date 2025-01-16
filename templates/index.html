@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Pembelian Ulang</title>
+</head>
+<body>
+    <h1>Prediksi Pembelian Ulang Material</h1>
+
+    <form action="{{ url_for('prediction.prediction_view') }}" method="POST">
+        <input type="text" name="material" placeholder="Masukkan Material">
+        <button type="submit">Prediksi</button>
+    </form>
+
+    {% if accuracy %}
+        <h2>Hasil Prediksi:</h2>
+        <p><strong>Akurasi:</strong> {{ accuracy }}</p>
+        <p><strong>Classification Report:</strong></p>
+        <pre>{{ report }}</pre>
+
+        <h3>Prediksi untuk Data Baru:</h3>
+        <ul>
+            {% for prediction in predictions %}
+                <li>{{ prediction }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

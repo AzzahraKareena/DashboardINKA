@@ -2,41 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload MB51 GI File</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f7f5f5;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+        }
+        .header {
+            background-color: #800000; /* Maroon color */
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
         }
         .container {
+            display: flex;
+            flex-direction: column;
+            margin: 20px;
+            gap: 20px;
+        }
+        .upload-section {
             background-color: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
         }
-        h1 {
-            color: #333;
+        .upload-section h2 {
+            color: #800000;
             margin-bottom: 20px;
+            text-align: center;
         }
-        input[type="file"] {
+        .upload-section input[type="file"] {
             margin: 20px 0;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
-            box-sizing: border-box;
         }
-        button {
+        .upload-section button {
             padding: 12px 20px;
-            background-color: #4CAF50;
+            background-color: #800000;
             color: white;
             border: none;
             border-radius: 5px;
@@ -44,34 +58,163 @@
             transition: background-color 0.3s, transform 0.2s;
             font-size: 16px;
             width: 100%;
-            margin-bottom: 10px; /* Add margin for spacing */
         }
-        button:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
+        .upload-section button:hover {
+            background-color: #a52a2a;
         }
-        button:active {
-            transform: scale(0.95);
+        .table-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* Enable horizontal scrolling */
         }
-        .back-button {
-            background-color: #007BFF;
-            width: 100px;
-            height: 40px; /* Blue color for the back button */
+        .table-section h2 {
+            color: #800000;
+            margin-bottom: 20px;
         }
-        .back-button:hover {
-            background-color: #0056b3;
-             /* Darker blue on hover */
+        .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .table-section th, .table-section td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .table-section th {
+            background-color: #800000;
+            color: white;
+        }
+        .table-section tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        /* Sticky header for the table */
+        .table-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Upload MB51 GI File</h1>
-        <form action="/mb51_gi/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
-            <button type="submit">Upload</button>
-        </form>
-        <a href="/"><button class="back-button">Kembali</button></a>
+    <div class="header">
+        MB51 GI Management
     </div>
+
+    <div class="container">
+        <!-- Form Upload Section -->
+        <div class="upload-section">
+            <h2>Upload File</h2>
+            <form id="uploadForm" action="/mb51_gi/upload" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="button" id="uploadButton">Upload</button>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <h2>Data MB51 GI</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead class="table-header">
+                        <tr>
+                            <th>Posting Date</th>
+                            <th>Material</th>
+                            <th>Material Description</th>
+                            <th>Purchase Order</th>
+                            <th>Document Date</th>
+                            <th>Quantity in Unit of Entry</th>
+                            <th>Item</th>
+                            <th>Movement Type</th>
+                            <th>WBS Element</th>
+                            <th>Unit of Entry</th>
+                            <th>Amount in LC</th>
+                            <th>Material Document</th>
+                            <th>User Name</th>
+                            <th>Document Header Text</th>
+                            <th>Reference</th>
+                            <th>Order</th>
+                            <th>Vendor</th>
+                            <th>Reservation</th>
+                            <th>Batch</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        <!-- Data from API will be appended here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and display data from the MB51 GI API
+        async function fetchAndDisplayData() {
+            try {
+                const response = await fetch('/api/mb51_gi'); // Adjust the API URL if necessary
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data from the API');
+                }
+
+                const data = await response.json();
+                const tableBody = document.getElementById('data-table');
+                const limitedData = data.slice(0, 10); // Limit to 10 rows for display
+
+                // Clear the existing table content
+                tableBody.innerHTML = "";
+
+                // Loop through the data and append rows to the table
+                limitedData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row['Posting_Date']}</td>
+                        <td>${row['Material']}</td>
+                        <td>${row['Material_Description']}</td>
+                        <td>${row['Purchase_Order']}</td>
+                        <td>${row['Document_Date']}</td>
+                        <td>${row['Qty_in_Un_of_Entry']}</td>
+                        <td>${row['Item']}</td>
+                        <td>${row['Movement_Type']}</td>
+                        <td>${row['WBS_Element']}</td>
+                        <td>${row['Unit_of_Entry']}</td>
+                        <td>${row['Amount_in_LC']}</td>
+                        <td>${row['Material_Document']}</td>
+                        <td>${row['User _Name']}</td>
+                        <td>${row['Document_Header_Text']}</td>
+                        <td>${row['Reference']}</td>
+                        <td>${row['Order']}</td>
+                        <td>${row['Vendor']}</td>
+                        <td>${row['Reservation']}</td>
+                        <td>${row['Batch']}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while fetching the data.');
+            }
+        }
+
+        // Call the function to fetch and display data when the page is loaded
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayData);
+
+        // SweetAlert for upload
+        document.getElementById("uploadButton").addEventListener("click", function () {
+            Swal.fire({
+                title: "Konfirmasi Upload",
+                text: "Kolom yang harus diunggah meliputi: Posting Date, Material, Material Description, Purchase Order, Document Date, Quantity in Unit of Entry, Item, Movement Type, WBS Element, Unit of Entry, Amount in Local Currency, Material Document, User Name, Document Header Text, Reference, Order, Vendor, Reservation, dan Batch.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonText: "Lanjutkan Upload",
+                cancelButtonText: "Batal",
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById("uploadForm").submit();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
